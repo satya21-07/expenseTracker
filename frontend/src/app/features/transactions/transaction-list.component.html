@@ -1,0 +1,175 @@
+<div class="transactions-container">
+    <div class="header-section animate-fade">
+        <div class="title-area">
+            <h1>Transaction History</h1>
+            <p>Keep track of every dollar you earn and spend</p>
+        </div>
+        <button class="btn btn-primary" (click)="toggleForm()">
+            <svg *ngIf="!showForm" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14" />
+                <path d="M5 12h14" />
+            </svg>
+            <svg *ngIf="showForm" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+            </svg>
+            <span>{{ showForm ? 'Cancel' : 'New Transaction' }}</span>
+        </button>
+    </div>
+
+    <!-- Add Transaction Modal-like Card -->
+    <div class="form-card glass animate-fade-up" *ngIf="showForm">
+        <div class="form-header">
+            <h3>{{ editingId ? 'Edit Transaction' : 'Add Transaction' }}</h3>
+            <p>{{ editingId ? 'Modify your entry details' : 'Fill out the details below' }}</p>
+        </div>
+        <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Type</label>
+                    <div class="type-tester">
+                        <button type="button" class="type-btn income"
+                            [class.selected]="transactionForm.get('type')?.value === 'INCOME'"
+                            (click)="transactionForm.patchValue({type: 'INCOME'})">Income</button>
+                        <button type="button" class="type-btn expense"
+                            [class.selected]="transactionForm.get('type')?.value === 'EXPENSE'"
+                            (click)="transactionForm.patchValue({type: 'EXPENSE'})">Expense</button>
+                        <button type="button" class="type-btn lent"
+                            [class.selected]="transactionForm.get('type')?.value === 'LENT'"
+                            (click)="transactionForm.patchValue({type: 'LENT'})">Lent</button>
+                        <button type="button" class="type-btn borrowed"
+                            [class.selected]="transactionForm.get('type')?.value === 'BORROWED'"
+                            (click)="transactionForm.patchValue({type: 'BORROWED'})">Borrowed</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Amount (\$)</label>
+                    <input type="number" formControlName="amount" class="form-control" placeholder="0.00" />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" formControlName="date" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select formControlName="categoryId" class="form-control">
+                        <option value="" disabled>Choose a category</option>
+                        <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <input type="text" formControlName="description" class="form-control"
+                    placeholder="What was this for?" />
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" [disabled]="transactionForm.invalid" class="btn btn-primary btn-block">
+                    {{ editingId ? 'Save Changes' : 'Log Transaction' }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Transaction List Table -->
+    <div class="table-card glass animate-fade-up">
+        <div class="table-header">
+            <h3>Recent Activity</h3>
+            <div class="filters">
+                <!-- Add dynamic filters if needed later -->
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Information</th>
+                        <th>Category</th>
+                        <th>Type</th>
+                        <th class="text-right">Amount</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let t of transactions" class="transaction-row">
+                        <td class="date-cell">
+                            <span class="day">{{ t.date | date:'dd' }}</span>
+                            <span class="month">{{ t.date | date:'MMM' }}</span>
+                        </td>
+                        <td class="info-cell">
+                            <span class="description">{{ t.description || 'No description' }}</span>
+                        </td>
+                        <td>
+                            <span class="category-pill">{{ t.categoryName }}</span>
+                        </td>
+                        <td>
+                            <span class="badge" [ngClass]="{
+                                'badge-success': t.type === 'INCOME',
+                                'badge-danger': t.type === 'EXPENSE',
+                                'badge-warning': t.type === 'LENT',
+                                'badge-info': t.type === 'BORROWED'
+                              }">
+                                {{ t.type }}
+                            </span>
+                        </td>
+                        <td class="amount-cell text-right" [ngClass]="{
+                                'text-success': t.type === 'INCOME',
+                                'text-danger': t.type === 'EXPENSE',
+                                'text-warning': t.type === 'LENT',
+                                'text-info': t.type === 'BORROWED'
+                            }">
+                            {{ (t.type === 'INCOME' || t.type === 'BORROWED') ? '+' : '-' }}\${{ t.amount |
+                            number:'1.2-2' }}
+                        </td>
+                        <td class="actions-cell text-center">
+                            <button class="action-btn edit" (click)="editTransaction(t)" title="Edit transaction">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                                </svg>
+                            </button>
+                            <button class="action-btn delete" (click)="deleteTransaction(t.id)"
+                                title="Delete transaction">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M3 6h18" />
+                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                    <line x1="10" x2="10" y1="11" y2="17" />
+                                    <line x1="14" x2="14" y1="11" y2="17" />
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="transactions.length === 0">
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-box">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"
+                                    stroke-linejoin="round" class="lucide lucide-receipt-text">
+                                    <path
+                                        d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z" />
+                                    <path d="M14 8H8" />
+                                    <path d="M16 12H8" />
+                                    <path d="M13 16H8" />
+                                </svg>
+                                <p>No transactions found for this period.</p>
+                                <button class="btn btn-outline" (click)="toggleForm()">Record first entry</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

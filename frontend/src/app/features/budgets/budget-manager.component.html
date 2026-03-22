@@ -1,0 +1,107 @@
+<div class="budget-container">
+    <div class="header-section animate-fade">
+        <div class="title-area">
+            <h1>Smart Budgets</h1>
+            <p>Set limits and get notified before you overspend</p>
+        </div>
+    </div>
+
+    <div class="layout-grid">
+        <!-- Configuration Panel -->
+        <div class="card glass animate-fade-up" style="animation-delay: 0.1s">
+            <div class="card-header">
+                <div class="header-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                    </svg>
+                </div>
+                <h3>Set Budget Limit</h3>
+            </div>
+
+            <form [formGroup]="budgetForm" (ngSubmit)="onSubmit()" class="budget-form">
+                <div class="form-group">
+                    <label>Select Category</label>
+                    <div class="custom-select">
+                        <select formControlName="categoryId" class="form-control">
+                            <option value="" disabled>Select a category</option>
+                            <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Monthly Limit (\$)</label>
+                    <div class="input-with-prefix">
+                        <span class="prefix">\$</span>
+                        <input type="number" formControlName="amount" class="form-control" placeholder="0.00" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="label-row">
+                        <label>Warning Threshold</label>
+                        <span class="threshold-value">{{ budgetForm.get('warningThreshold')?.value }}%</span>
+                    </div>
+                    <input type="range" formControlName="warningThreshold" min="1" max="100" class="range-slider" />
+                    <p class="hint">We'll alert you when spending hits this percentage</p>
+                </div>
+
+                <button type="submit" [disabled]="budgetForm.invalid" class="btn btn-primary btn-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                        <polyline points="17 21 17 13 7 13 7 21" />
+                        <polyline points="7 3 7 8 15 8" />
+                    </svg>
+                    Update Budget
+                </button>
+            </form>
+        </div>
+
+        <!-- Active Budgets Panel -->
+        <div class="card glass animate-fade-up" style="animation-delay: 0.2s">
+            <div class="card-header">
+                <div class="header-icon secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v20" />
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                </div>
+                <h3>Active Limits</h3>
+            </div>
+
+            <div class="budget-list">
+                <div class="budget-card animate-fade" *ngFor="let b of budgets">
+                    <div class="budget-top">
+                        <div class="category-info">
+                            <div class="bullet"></div>
+                            <h4>{{ b.categoryName }}</h4>
+                        </div>
+                        <div class="limit-value">\${{ b.amount | number:'1.0-0' }} /mo</div>
+                    </div>
+                    <div class="budget-bottom">
+                        <div class="meta">
+                            <span class="warning-tag">Alert at {{ b.warningThreshold }}%</span>
+                        </div>
+                        <div class="status-indicator"
+                            [style.background]="'linear-gradient(90deg, var(--primary) ' + b.warningThreshold + '%, #eee ' + b.warningThreshold + '%)'">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="empty-budgets" *ngIf="budgets.length === 0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 8v8" />
+                        <path d="M8 12h8" />
+                    </svg>
+                    <p>You haven't set any monthly budgets yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
